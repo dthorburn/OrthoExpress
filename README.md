@@ -13,11 +13,7 @@ The tools is based upon R scripts, and developed using R version 4.1.1. Please e
 ### Step 1: Install packages
 OrthoExpression relies on several R packages, but this only needs to be done the first time the tool is used.
 ```
-install.packages("data.table")
-install.packages("ggplot2")
-install.packages("remotes")
-install.packages("shiny")
-install.packages("dplyr")
+install.packages(c("data.table", "ggplot2", "remotes", "shiny", "dplyr"))
 remotes::install_github("coolbutuseless/ggpattern")
 ```
 
