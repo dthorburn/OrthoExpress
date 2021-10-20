@@ -24,7 +24,6 @@ remotes::install_github("coolbutuseless/ggpattern")
 ### Step 2: Access application
 OrthoExpression is built on an interactive [Shiny](https://shiny.rstudio.com/) script. To use it, there are two options: 
 #### Option 1: Use runGitHub
-In an R console, run ```library(shiny)```, then ```shiny::runGitHub('OrthoExpress', 'dthorburn')```
+In an R console, run ```shiny::runGitHub('OrthoExpress', 'dthorburn', ref="main")```. This option requires an internet connection. 
 #### Option 2: Download and run locally
-download the following files fromt his repository:
-1) 
+Alternatively, if you want to use this without an internet connection, download/clone the repository. Ensure to update the ```setwd()``` to the appropraite directory containing the file ```All_Expression_Dat_201021.RData``` and remove the ```#``` at the start of the line. Then run ```shiny::runApp("/path/to/file/app.r")```. 
