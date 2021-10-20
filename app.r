@@ -33,7 +33,7 @@ Rose_Gene <- function(temp_gene){
   temp_dat2 <- subset(temp_dat, !grepl(pattern = "Mean", variable))
   if(nrow(temp_dat2) != 0){
     ggplot(temp_dat2, aes(x = variable, y = value, fill = Sex, pattern = Dataset)) +
-      geom_bar_pattern(stat = "identity", pattern_fill = "black", colour = "black") +
+      geom_bar_pattern(stat = "identity", pattern_fill = "black", colour = "black", width = 1) +
       scale_pattern_manual(values = c(Pupae = "circle", Larvae = "none")) +
       theme_classic(base_size = 20) +
       theme(axis.text.x = element_text(angle = 45, hjust =1)) +
@@ -48,7 +48,7 @@ Taxiarchi_Gene <- function(temp_gene){
   temp_dat <- subset(Taxi_melted, Gene_ID == temp_gene)
   if(nrow(temp_dat) != 0){
     ggplot(temp_dat, aes(x = Population, y = value)) +
-      geom_bar(stat = "identity", fill = "slategrey", colour = "black") +
+      geom_bar(stat = "identity", fill = "slategrey", colour = "black", width = 1) +
       theme_classic(base_size = 20) +
       labs(x = "Meiotic Population", y = "FPKM", 
         title = paste0("Taxiarchi dataset: ", temp_gene, "\nTestes Specific: ", ifelse(unique(temp_dat$Testes_Specific) == -1, "No", "Yes"), "; Ovaries Specific: ", ifelse(unique(temp_dat$Ovaries_Specific) == -1, "No", "Yes"))) +
@@ -63,7 +63,7 @@ Baker_Gene <- function(temp_gene){
   temp_dat <- subset(Baker_melted, Gene_ID == temp_gene)
   if(nrow(temp_dat) != 0 & !sum(grepl(pattern = "N/A", temp_dat$value)) == nrow(temp_dat)){
     ggplot(temp_dat, aes(x = variable, y = as.numeric(value), fill = Sex)) +
-      geom_bar(stat = "identity", colour = "black") +
+      geom_bar(stat = "identity", colour = "black", width = 1) +
       theme_classic(base_size = 20) +
       labs(x = "Anatomical Feature", y = "log2(RMA)", title = paste0("Baker dataset: ", temp_gene)) +
       theme(axis.text.x = element_text(angle = 45, hjust =1)) +
@@ -82,7 +82,7 @@ Papa_Gene <- function(temp_gene, include_oviposit = 0){
   if(nrow(temp_dat) != 0){
     ggplot(temp_dat, aes(x = variable, y = as.numeric(value), pattern = TMA_Hit, fill = Sex)) +
       scale_pattern_manual(values = c(Nonunique = "circle", Unique = "none")) +
-      geom_bar_pattern(stat = "identity", position = "stack", pattern_fill = "black", colour = "black") +
+      geom_bar_pattern(stat = "identity", position = "stack", pattern_fill = "black", colour = "black", width = 1) +
       theme_classic(base_size = 20) +
       labs(x = "Anatomical Feature", y = "log2(RMA)", title = paste0("Baker dataset: ", temp_gene)) +
       theme(axis.text.x = element_text(angle = 45, hjust =1)) +
