@@ -110,7 +110,7 @@ ui <- pageWithSidebar(
                               choices = list("Papa et al. 2017" = "Papa",
                                              "Baker et al. 2011" = "Baker", 
                                              "Taxiarchi et al. 2019 " = "Taxiarchi",
-                                             "Rose et al. 2015" = "Rose"),
+                                             "Rose et al. 2016" = "Rose"),
                               selected = 0),
     helpText("For more information on expression units or the naming conventions used see the \"More Info\" tab."),
 
@@ -124,11 +124,30 @@ ui <- pageWithSidebar(
   mainPanel(
     tabsetPanel(
       tabPanel("Expression Datasets", 
-          plotOutput("plot1"),
-          plotOutput("plot2"),
-          plotOutput("plot3"),
-          plotOutput("plot4")),
-      tabPanel("More Info", textOutput("txt"))
+        plotOutput("plot1"),
+        plotOutput("plot2"),
+        plotOutput("plot3"),
+        plotOutput("plot4")
+      ),
+      tabPanel("More Info",
+        h2("Expression Units:"),
+        h4(strong("TPM: Transcript Per Million."), " This is calculated following this logic, 
+          for every 1,000,000 RNA molecules in the RNA-seq sample, ", em("x"), " came from this gene/transcript. Unique hits are reads with a single best match during alignment, and nonunique reads map to two of more transcripts."),
+        h4(strong("RPKM: Reads Per Kilobase of transcript per Million reads mapped."), " This uses the same logic as above to estimate reads per million, but aditionally divides by the length of the gene in kb."),
+        h4(strong("FPKM: Fragments Per Kilobase of transcript per Million reads mapped."), " Whereas RPKM was developed for single-end RNAseq analyses, FPKM uses paired-end sequencing. Here, FPKM also accounts for whether both reads mapped to the same trascript"),
+        h4(strong("RMA: Robust Multiarray Averaging."), " A method of normalising microarray probe intesnities, and includes background correction, normalization, perfect match correction and summarization with the RMA algorithm."),
+        br(),
+        h2("References:"),
+        h4(strong("Baker, D. A., Nolan, T., Fischer, B., Pinder, A., Crisanti, A. and Russell, S."), 
+          " (2011). Female-biased gene expression in the malaria mosquito Anopheles gambiae. BMC Genomics 12, 1–12. doi: 10.1016/j.cub.2005.03.005."),
+        h4(strong("Papa, F., Windbichler, N., Waterhouse, R. M., Cagnetti, A., D’Amato, R., Persampieri, T., Lawniczak, M. K. N., Nolan, T. and Papathanos, P. A."), 
+          " (2017). Rapid evolution of female-biased genes among four species of Anopheles malaria mosquitoes. Genome Research 27, 1536–1548. doi: 10.1101/gr.217216.116."),
+        h4(strong("Rose, G., Krzywinska, E., Kim, J., Revuelta, L., Ferretti, L. and Krzywinski, J."), 
+          "  (2016). Dosage compensation in the African malaria mosquito Anopheles gambiae. Genome Biology and Evolution 8, 411–425. doi: 10.1093/gbe/evw004."),
+        h4(strong("Taxiarchi, C., Kranjc, N., Kriezis, A., Kyrou, K., Bernardini, F., Russell, S., Nolan, T., Crisanti, A. and Galizi, R."), 
+          " (2019). High-resolution transcriptional profiling of Anopheles gambiae spermatogenesis reveals mechanisms of sex chromosome regulation. Scientific Reports 9, 1–12. doi: 10.1038/s41598-019-51181-1.")
+      ),
+      tabPanel("Debugging", textOutput("txt"))
     )
   )
 )
