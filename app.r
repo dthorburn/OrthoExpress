@@ -1,9 +1,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~                  Cristanti Group Agambiae Orthology & Expression Tool                          ~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Author: Miles <dthorburn@imperial.ac.uk>
-## Last Update: 13/10/21
-## VectorBase is very useful, but the new version makes isn't as use friendly as before, and the orthology
+## Author: Miles Thorburn <dthorburn@imperial.ac.uk>
+## Last Update: 21/10/21
+## VectorBase is very useful, but the new version isn't as use friendly as before, and the orthology
 ## assignment seems poor to me. Hence creating this.
 ## Load in all of the libraries
 suppressMessages(library(data.table))
@@ -19,12 +19,14 @@ suppressMessages(library(shiny))
 #  Taxi_melted <- fread("Processed_Taxiarchi_RNASeq.csv")
 #  Papa_melted <- fread("Processed_Papa_RNASeq.csv")
 #  Baker_melted <- fread("Processed_Baker_RNASeq.csv")
+#  Pirbright_melted <- fread("Processed_Pirbright_RNASeq.csv")
 
 ## Saving all data for ease of use
-#save.image(file = "All_Expression_Dat_201021.RData")
+#save.image(file = "All_Expression_Dat_211021.RData")
 
 ## loading in data
-load(file = "All_Expression_Dat_201021.RData")
+#load(file = "All_Expression_Dat_201021.RData")
+load(file = "All_Expression_Dat_211021.RData")
 
 ## Defining the plotting functions - this is simply to make the plots more intuitive, 
 ## but can be reduced to make the tool run more smoothly if needed. 
@@ -59,19 +61,24 @@ Taxiarchi_Gene <- function(temp_gene){
     theme_classic(base_size = 20)
   }
 }
-Baker_Gene <- function(temp_gene){
-  temp_dat <- subset(Baker_melted, Gene_ID == temp_gene)
+Baker_Gene <- function(temp_gene, dataset = "Baker"){
+  temp_dat <- subset(get(paste0(dataset, "_melted")), Gene_ID == temp_gene)
   if(nrow(temp_dat) != 0 & !sum(grepl(pattern = "N/A", temp_dat$value)) == nrow(temp_dat)){
-    ggplot(temp_dat, aes(x = variable, y = as.numeric(value), fill = Sex)) +
-      geom_bar(stat = "identity", colour = "black", width = 1) +
-      theme_classic(base_size = 20) +
-      labs(x = "Anatomical Feature", y = "log2(RMA)", title = paste0("Baker dataset: ", temp_gene)) +
-      theme(axis.text.x = element_text(angle = 45, hjust =1)) +
-      scale_x_discrete(expand = c(0,0)) +
-      scale_y_continuous(expand = c(0,0)) 
+    plot <- ggplot(temp_dat, aes(x = variable, y = as.numeric(value), fill = Sex)) +
+          geom_bar(stat = "identity", colour = "black", width = 1) +
+          theme_classic(base_size = 20) +
+          theme(axis.text.x = element_text(angle = 45, hjust =1)) +
+          scale_y_continuous(expand = c(0,0)) 
+    if(dataset == "Baker"){
+      plot + labs(x = "Anatomical Feature", y = "log2(RMA)", title = paste0("Baker dataset: ", temp_gene)) +
+            scale_x_discrete(expand = c(0,0)) 
+    } else if(dataset == "Pirbright"){
+      x_order <- Pirbright_melted$variable %>% unique
+      plot + labs(x = "Developmental Stage", y = "FPKM", title = paste0("Unpublished Pirbright dataset: ", temp_gene)) +
+           scale_x_discrete(limits = x_order, expand = c(0,0))
+    }
   } else {
-    qplot(main = paste0("ERROR: No data found on gene ", temp_gene, " in Baker dataset\n"))+
-    theme_classic(base_size = 20)
+    cat(paste0("ERROR: No data found on gene ", temp_gene, " in ", dataset, " dataset\n"))
   }
 }
 Papa_Gene <- function(temp_gene, include_oviposit = 0){
@@ -108,9 +115,11 @@ ui <- pageWithSidebar(
               "I'm working on implementing using ortholog IDs too, but this will take some time."),
     checkboxGroupInput("checkGroup", h3("Expression Datasets:"), 
                               choices = list("Papa et al. 2017" = "Papa",
+                                             "Unpublished Pirbright" = "Pirbright",
                                              "Baker et al. 2011" = "Baker", 
                                              "Taxiarchi et al. 2019 " = "Taxiarchi",
-                                             "Rose et al. 2016" = "Rose"),
+                                             "Rose et al. 2016" = "Rose"
+                                             ),
                               selected = 0),
     helpText("For more information on expression units or the naming conventions used see the \"More Info\" tab."),
 
@@ -127,7 +136,8 @@ ui <- pageWithSidebar(
         plotOutput("plot1"),
         plotOutput("plot2"),
         plotOutput("plot3"),
-        plotOutput("plot4")
+        plotOutput("plot4"),
+        plotOutput("plot5")
       ),
       tabPanel("More Info",
         h2("Expression Units:"),
@@ -145,7 +155,9 @@ ui <- pageWithSidebar(
         h4(strong("Rose, G., Krzywinska, E., Kim, J., Revuelta, L., Ferretti, L. and Krzywinski, J."), 
           "  (2016). Dosage compensation in the African malaria mosquito Anopheles gambiae. Genome Biology and Evolution 8, 411–425. doi: 10.1093/gbe/evw004."),
         h4(strong("Taxiarchi, C., Kranjc, N., Kriezis, A., Kyrou, K., Bernardini, F., Russell, S., Nolan, T., Crisanti, A. and Galizi, R."), 
-          " (2019). High-resolution transcriptional profiling of Anopheles gambiae spermatogenesis reveals mechanisms of sex chromosome regulation. Scientific Reports 9, 1–12. doi: 10.1038/s41598-019-51181-1.")
+          " (2019). High-resolution transcriptional profiling of Anopheles gambiae spermatogenesis reveals mechanisms of sex chromosome regulation. Scientific Reports 9, 1–12. doi: 10.1038/s41598-019-51181-1."),
+        h4(strong("Pirbright Institute"), 
+          " (Unpublished). ", a("Data Set", href = "https://vectorbase.org/vectorbase/app/record/dataset/DS_bf500a6707"), ": Developmental transcriptome of sexed Anopheles gambiae larvae and adult mosquitoes group 2")
       ),
       tabPanel("Debugging", textOutput("txt"))
     )
@@ -169,6 +181,8 @@ server <- function(input, output) {
       if(grepl(pattern = "Papa", input$checkGroup[1]) %>% sum == 1){
         string <- paste0(input$checkGroup[1], "_Gene(\"", gene_id(), "\", include_oviposit = ", input$oviGroup,")")
         eval(parse(text = string))
+      } else if(grepl(pattern = "Pirbright", input$checkGroup[1]) %>% sum == 1){
+        Baker_Gene(gene_id(), dataset = "Pirbright")
       } else {
         string <- paste0(input$checkGroup[1], "_Gene(\"", gene_id(), "\")")
         eval(parse(text = string))
@@ -193,7 +207,12 @@ server <- function(input, output) {
       eval(parse(text = string))
     }
   })
-
+  output$plot5 <- renderPlot({
+    if(length(input$checkGroup)>=4){
+      string <- paste0(input$checkGroup[4], "_Gene(\"", gene_id(), "\")")
+      eval(parse(text = string))
+    }
+  })
   ## The Help Box 
   output$txt <- renderText({
     ## Defining the datasets to use for expression data
