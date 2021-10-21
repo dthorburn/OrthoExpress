@@ -139,6 +139,9 @@ ui <- pageWithSidebar(
         plotOutput("plot4"),
         plotOutput("plot5")
       ),
+      tabPanel("Orthology", 
+      
+      ),
       tabPanel("More Info",
         h2("Expression Units:"),
         h4(strong("TPM: Transcript Per Million."), " This is calculated following this logic, 
@@ -191,8 +194,12 @@ server <- function(input, output) {
   })
   output$plot2 <- renderPlot({
     if(length(input$checkGroup)>=2){
-      string <- paste0(input$checkGroup[2], "_Gene(\"", gene_id(), "\")")
-      eval(parse(text = string))
+      if(grepl(pattern = "Pirbright", input$checkGroup[2]) %>% sum == 1){
+        Baker_Gene(gene_id(), dataset = "Pirbright")
+      } else {
+        string <- paste0(input$checkGroup[2], "_Gene(\"", gene_id(), "\")")
+        eval(parse(text = string))
+      }
     }
   })
   output$plot3 <- renderPlot({
@@ -208,8 +215,8 @@ server <- function(input, output) {
     }
   })
   output$plot5 <- renderPlot({
-    if(length(input$checkGroup)>=4){
-      string <- paste0(input$checkGroup[4], "_Gene(\"", gene_id(), "\")")
+    if(length(input$checkGroup)>=5){
+      string <- paste0(input$checkGroup[5], "_Gene(\"", gene_id(), "\")")
       eval(parse(text = string))
     }
   })
@@ -222,5 +229,4 @@ server <- function(input, output) {
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Orthology output  
 }
-
 shinyApp(ui, server)
