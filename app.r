@@ -145,7 +145,6 @@ ui <- pageWithSidebar(
       tabPanel("More Info",
         h2("Phylogenetic Species Tree Based on Orthology:"),
         h4("OrthoFinder (Emms & Kelly, 2019) was used to infer the species tree based on an all-versus-all peptide comparison among all insect species. Here, colours represent different orders: Blue is Diptera; Green is Lepidoptera; Yellow is Hymenoptera; and Red is Coleoptera."),
-        img(src = "./Images/Consensus_Species_Tree_OrthoFinder.png"),
         img(src = "Consensus_Species_Tree_OrthoFinder.png"),
         br(),
 
@@ -177,6 +176,8 @@ ui <- pageWithSidebar(
 ## Server Logic
 server <- function(input, output) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Expression output  
+  shinyAppDir(".")
+  
   ## Defining the parameters and removing any white spaces in the input
   gene_id <- reactive({
     gene_id <- input$gene_id %>% trimws
