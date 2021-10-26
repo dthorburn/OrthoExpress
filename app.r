@@ -145,7 +145,8 @@ ui <- pageWithSidebar(
       tabPanel("More Info",
         h2("Phylogenetic Species Tree Based on Orthology:"),
         h4("OrthoFinder (Emms & Kelly, 2019) was used to infer the species tree based on an all-versus-all peptide comparison among all insect species. Here, colours represent different orders: Blue is Diptera; Green is Lepidoptera; Yellow is Hymenoptera; and Red is Coleoptera."),
-        img(src = "/Images/Consensus_Species_Tree_OrthoFinder.png"),
+        img(src = "./Images/Consensus_Species_Tree_OrthoFinder.png"),
+        img(src = "Consensus_Species_Tree_OrthoFinder.png"),
         br(),
 
         h2("Expression Units:"),
