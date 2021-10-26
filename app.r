@@ -143,6 +143,11 @@ ui <- pageWithSidebar(
       
       ),
       tabPanel("More Info",
+        h2("Phylogenetic Species Tree Based on Orthology:"),
+        h4("OrthoFinder (Emms & Kelly, 2019) was used to infer the species tree based on an all-versus-all peptide comparison among all insect species. Here, colours represent different orders: Blue is Diptera; Green is Lepidoptera; Yellow is Hymenoptera; and Red is Coleoptera."),
+        img(src = "/Images/Consensus_Species_Tree_OrthoFinder.png"),
+        br(),
+
         h2("Expression Units:"),
         h4(strong("TPM: Transcript Per Million."), " This is calculated following this logic, 
           for every 1,000,000 RNA molecules in the RNA-seq sample, ", em("x"), " came from this gene/transcript. Unique hits are reads with a single best match during alignment, and nonunique reads map to two of more transcripts."),
@@ -150,6 +155,7 @@ ui <- pageWithSidebar(
         h4(strong("FPKM: Fragments Per Kilobase of transcript per Million reads mapped."), " Whereas RPKM was developed for single-end RNAseq analyses, FPKM uses paired-end sequencing. Here, FPKM also accounts for whether both reads mapped to the same trascript"),
         h4(strong("RMA: Robust Multiarray Averaging."), " A method of normalising microarray probe intesnities, and includes background correction, normalization, perfect match correction and summarization with the RMA algorithm."),
         br(),
+               
         h2("References:"),
         h4(strong("Baker, D. A., Nolan, T., Fischer, B., Pinder, A., Crisanti, A. and Russell, S."), 
           " (2011). Female-biased gene expression in the malaria mosquito Anopheles gambiae. BMC Genomics 12, 1–12. doi: 10.1016/j.cub.2005.03.005."),
