@@ -7,11 +7,11 @@ OrthoExpress is a tool developed primarily for use in the Crisanti group, but ca
 2) Orthology and paralogy assignment using a database of 42 insect species, including all annotated mosquito species on [Ensembl Metazoa](https://metazoa.ensembl.org/species.html) version 51 \[Accessed: 10/2021\]. Likely due to the demanding nature of consistent updates to their database, VectorBase's orthology assignment is not as broad as I was expecting. I used [OrthoFinder](https://github.com/davidemms/OrthoFinder) to cluster genes into orthogroups based on an all-versus-all peptide sequence comparison. Gene set expansion can be inferred from high numbers of orthologs in other taxa in the orthology plot. 
 3) Gene function information is reported as Gene Ontology (GO) IDs, and can inform on cellular components involved, molecular functions, and biological processes. All GO annotations are taken from Ensembl Metazoa version 51. 
 
-***NB.*** *Expression and gene function data is currently only available for AgamP4 gene IDs. Use the orthology table to identify putative orthologs in A. gambiae if needed.*
+***N.B.*** *Expression and gene function data is currently only available for AgamP4 gene IDs. Use the orthology table to identify putative orthologs in A. gambiae if needed.*
 
 ## Installation
 
-The tools is based upon R scripts, and developed using R version 4.1.1. Please ensure your R is up to date - you can use the R package [installr](https://cran.r-project.org/web/packages/installr/index.html) to update R to the most recent version. Becuase this tool relies on a GUI, you need to run this on your personal computer, and not an HPC. 
+This tool is written in R and was developed using R version 4.1.1. Please ensure your R is version 4+ - you can use the R package [installr](https://cran.r-project.org/web/packages/installr/index.html) to update R to the most recent version. Becuase this tool relies on a GUI, you need to run this on your personal computer, and not an HPC. 
 
 ### Step 1: Install packages
 OrthoExpress relies on several R packages, but this only needs to be done the first time the tool is used. Estimated time to complete installation is 10 minutes - there are a lot of dependencies if you do not have any of the libraries installed. 
