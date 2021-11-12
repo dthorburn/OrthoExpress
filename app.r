@@ -37,6 +37,11 @@ load(file = "All_Orthology_Dat_261021.RData")
 load(file = "AgamP4_GO_Dataset_271021.RData")
 load(file = "All_Species_Tree_271021.RData")
 
+## A temporary fix for the incorrect column names
+Pirbright_melted[,"variable" := gsub(pattern = "20h_", replacement = "", variable) %>% 
+								gsub(pattern = "36h_", replacement = "", .) %>%
+								gsub(pattern = "mean_", replacement = "", .)]
+
 ## Defining the plotting functions - this is simply to make the plots more intuitive, 
 ## but can be reduced to make the tool run more smoothly if needed. 
 Rose_Gene <- function(temp_gene){
@@ -87,7 +92,8 @@ Baker_Gene <- function(temp_gene, dataset = "Baker"){
            scale_x_discrete(limits = x_order, expand = c(0,0))
     }
   } else {
-    cat(paste0("ERROR: No data found on gene ", temp_gene, " in ", dataset, " dataset\n"))
+    qplot(main = paste0("ERROR: No data found on gene ", temp_gene, " in Baker dataset\n"))+
+    theme_classic(base_size = 20)
   }
 }
 Papa_Gene <- function(temp_gene, include_oviposit = 0){
@@ -105,9 +111,9 @@ Papa_Gene <- function(temp_gene, include_oviposit = 0){
       scale_x_discrete(expand = c(0,0)) +
       scale_y_continuous(expand = c(0,0)) +
       labs(x = "Developmental Stage", y = "TPM", pattern = "TPM Read\nMapping",
-        title = paste0("Papa dataset: ", temp_gene, "\nOviposit Data Included: ", ifelse(include_oviposit == 0, "No", "Yes"))) 
+        title = paste0("Papa dataset: ", temp_gene, "| Oviposit Data Included: ", ifelse(include_oviposit == 0, "No", "Yes"))) 
   } else {
-    qplot(main = paste0("ERROR: No data found on gene ", Papa, " in Papa dataset\n"))+
+    qplot(main = paste0("ERROR: No data found on gene ", temp_gene, " in Papa dataset\n"))+
     theme_classic(base_size = 20)
   }
 } 
@@ -188,33 +194,48 @@ Orthology <- function(query, input_feature = "Gene"){
 ## UI Settings
 ui <- pageWithSidebar(
   # Application title
-  headerPanel(strong("OrthoExpress: ", em("Anopheles gambiae"), "Orthology & Expression Tool")),
+  headerPanel(strong("OrthoExpress: ", em("Anopheles gambiae"), "Orthology, Ontology, & Expression Tool")),
 
   ## The options section
   sidebarPanel(
+    textInput("gene_id", h3("Query:"), value = ""),
     width = 3,
-    textInput("gene_id", h3("Query Gene:"), value = ""),
     helpText("For expression plots use ", em("Anopheles gambiae")," VectorBase gene IDs (e.g., AGAP001094). Transcript and protein IDs and orthologous sequences is not currently implemented.", br(), br(), "For orthology assignment select annotation feature below 
       and use VectorBase or Ensembl IDs for any of the species included (e.g., ", em("Drosophila melanogaster")," transcript FBtr0077192). See More Info tab for species information. "),
-    radioButtons("annGroup", h3("Annotation Feature"),
-                              choices = list("Gene" = "Gene", "Transcript" = "Transcript", "Protien" = "Protein"), selected = "Gene"),
     submitButton("Submit Query"),
-    br(),
-    downloadButton("downloadData", "Download Orthology Table"),
-    downloadButton("downloadGOData", "Download Gene Ontology Table"),
+    hr(style="border-color: #b2b2b3; margin-bottom: 0px"),
+    
     checkboxGroupInput("checkGroup", h3("Expression Datasets:"), 
-                              choices = list("Papa et al. 2017" = "Papa",
+                            choices = list("Papa et al. 2017" = "Papa",
                                              "Unpublished Pirbright" = "Pirbright",
                                              "Baker et al. 2011" = "Baker", 
                                              "Taxiarchi et al. 2019 " = "Taxiarchi",
                                              "Rose et al. 2016" = "Rose"
                                              ),
                               selected = 0),
-    helpText("Select up to 5 datasets to plot. For more information on expression units or references see the \"More Info\" tab."),
+    						helpText("Select up to 5 datasets to plot. For more information on expression units or references see the \"More Info\" tab."),
+    hr(style="border-color: #b2b2b3; margin-bottom: 0px"),
+    
+    radioButtons("annGroup", h3("Annotation Feature"),
+                              choices = list("Gene" = "Gene", "Transcript" = "Transcript", "Protien" = "Protein"), selected = "Gene"),
+    helpText("Only needed if not using ", em("Anopheles gambiae"), " gene IDs"),
+    hr(style="border-color: #b2b2b3; margin-bottom: 0px"),
+    
+    h3("Download Data:"),
+    downloadButton("downloadData", "Download Orthology Table"),
+    downloadButton("downloadGOData", "Download Gene Ontology Table"),
+    hr(style="border-color: #b2b2b3; margin-bottom: 0px"),
 
-    radioButtons("oviGroup", h3("Papa dataset, include oviposit columns?"),
+    h3("Additional Options:"),
+    radioButtons("OrthSimp", h4("Include transcripts in orthology table?"),
                               choices = list("Yes" = 1, "No" = 0), selected = 0),
-    helpText(br(), "To report bugs or request data to be added, please contact Miles Thorburn <d.thorburn@imperial.ac.uk>")
+    radioButtons("GOAll", h4("Search GO Annotations"),
+                              choices = list("Yes" = 1, "No" = 0), selected = 0),
+    radioButtons("oviGroup", h4("Papa dataset, include oviposit columns?"),
+                              choices = list("Yes" = 1, "No" = 0), selected = 0),
+    hr(style="border-color: #b2b2b3; margin-bottom: 0px"),
+
+    helpText("To report bugs or request data to be added, please contact Miles Thorburn <d.thorburn@imperial.ac.uk>")
   ),
 
   ## Defining the output and panels
@@ -224,6 +245,7 @@ ui <- pageWithSidebar(
       tabPanel("Expression Plots", 
         plotOutput("plot1"),
         plotOutput("plot2"),
+        plotOutput("plot3"),
         plotOutput("plot4"),
         plotOutput("plot5")
       ),
@@ -241,14 +263,20 @@ ui <- pageWithSidebar(
       ),
       
       tabPanel("More Info",
+        h2("Motivation:"),
+        h4("Whilst VectorBase is a very useful tool, the expression datasets are tedious to use. Plus, there is a lot of data in the lab that is currently unused which could prove useful to others. Hence, I created a tool to plot the most commonly used expression datasets from VB which we can add our data too easily. 
+        	Moreover, the orthology analysis on VB is quite limited, likely due to computational requirements of running a site-wide analysis every time a new species is added. Hence, I have conducted an orthology analysis for a series of mosquito and other insect species. 
+        	Altogether, this tool should expidite candidate gene searches, including through using gene/transcript/protein IDs found in papers on any of the species included herein."),
+        hr(),
+
         h2("How it works:"),
         h4(strong("Expression: "), "The first step is ensuring the query is either an ", em("Anopheles gambiae"), " gene, or that the query has only 1 ", em("A. gambiae"),
         "ortholog. Then the requested datasets are simply subset to only include that data and plotted in an informative manner."),
         h4(strong("Orthology: "), "Orthology was assigned using OrthoFinder (Emms & Kelly, 2019). OrthoFinder infers orthogroups (both orthology and paralogy) for all species based on an 
-        all-versus-all peptide comparison. It also creates gene trees for all orthogroups and infers a species tree (see below).",
+        all-versus-all peptide comparison. It also creates gene trees for all orthogroups and infers a species tree (see \"Orthology Plot tab\"). Gene trees are available upon request, just provide the orthogroup ID.",
         "This tool first converts the query into the protein accession, then finds the associated orthogroup and returns that table. If more than one orthogroup
         is identified (i.e., a gene with multiple transcripts in different orthogroups), the function will recursively run through each orthogroup."),
-        br(),
+        hr(),
         
         h2("Known Bugs:"),
         h4("You cannot change to the Orthology Table tab before you've submitted a query"),
@@ -260,7 +288,7 @@ ui <- pageWithSidebar(
         h4(strong("RPKM: Reads Per Kilobase of transcript per Million reads mapped."), " This uses the same logic as above to estimate reads per million, but aditionally divides by the length of the gene in kb."),
         h4(strong("FPKM: Fragments Per Kilobase of transcript per Million reads mapped."), " Whereas RPKM was developed for single-end RNAseq analyses, FPKM uses paired-end sequencing. Here, FPKM also accounts for whether both reads mapped to the same trascript"),
         h4(strong("RMA: Robust Multiarray Averaging."), " A method of normalising microarray probe intesnities, and includes background correction, normalization, perfect match correction and summarization with the RMA algorithm."),
-        br(),
+        hr(),
 
         h2("References:"),
         h4(strong("Baker, D. A., Nolan, T., Fischer, B., Pinder, A., Crisanti, A. and Russell, S."), 
@@ -274,7 +302,8 @@ ui <- pageWithSidebar(
         h4(strong("Taxiarchi, C., Kranjc, N., Kriezis, A., Kyrou, K., Bernardini, F., Russell, S., Nolan, T., Crisanti, A. and Galizi, R."), 
           " (2019). High-resolution transcriptional profiling of Anopheles gambiae spermatogenesis reveals mechanisms of sex chromosome regulation. Scientific Reports 9, 1–12. doi: 10.1038/s41598-019-51181-1."),
         h4(strong("Pirbright Institute"), 
-          " (Unpublished). ", a("Data Set", href = "https://vectorbase.org/vectorbase/app/record/dataset/DS_bf500a6707"), ": Developmental transcriptome of sexed Anopheles gambiae larvae and adult mosquitoes group 2. [Downloaded from VectorBase; 10/2021]")
+          " (Unpublished). ", a("Data Set", href = "https://vectorbase.org/vectorbase/app/record/dataset/DS_bf500a6707"), ": Developmental transcriptome of sexed Anopheles gambiae larvae and adult mosquitoes group 2. [Downloaded from VectorBase; 10/2021]"),
+        hr()
       ),
 #      tabPanel("Debugging", 
 #        textOutput("input"),
@@ -355,7 +384,12 @@ server <- function(input, output) {
 #    out_errs <- capture.output(eval(parse(text = string)), type = "message")
 #  })
   output$Orth_Tab <- renderDataTable({
-    Orth_dat()
+    if(input$OrthSimp == 1){
+    	Orth_dat()
+    }	else if(input$OrthSimp == 0){
+    	Orths <- Orth_dat()
+    	Orths[,!c("Transcript_ID", "Protein_ID")] %>% unique
+    }
   })
   output$downloadData <- downloadHandler(
     filename = function() {
@@ -368,6 +402,8 @@ server <- function(input, output) {
 
   output$Orth_Plot <- renderPlot({    
     Orths <- Orth_dat()
+    ## There was too much expansion - it was becuase I was plotting the number of transcripts...
+    Orths <- Orths[,c("Species", "Gene_ID")] %>% unique
     Orth_tab <- table(Orths$Species) %>% as.data.table 
     names(Orth_tab) <- c("Full_Name", "Num_Orthologs")
     Orth_tab[,"Full_Name" := ifelse(grepl(pattern = "Aedes_aegypti_lvpagwg", Full_Name), "Aedes_aegypti", Full_Name)]
@@ -382,16 +418,17 @@ server <- function(input, output) {
         geom_tiplab(aes(colour = Order, label=paste0('italic(', genus, ')~italic(', species,')')), parse=TRUE, hjust = 0, show.legend = F, align=TRUE, linesize=.5, size = 6) +
         geom_text2(aes(label=label, subset = !is.na(as.numeric(label)) & as.numeric(label) > 50), hjust = -0.1, colour = "darkgrey", size = 3.5) +
         scale_colour_manual(values = c("red", "blue", "darkorange", "darkgreen")) 
-    tre2 <- facet_plot(tre  + theme_tree2(), panel = 'Number of Orthologs', 
+    tre2 <- facet_plot(tre  + theme_tree2(), panel = 'Number of Orthologous Genes', 
                   data = Metadat2, geom = geom_barh,
                   mapping = aes(x = Num_Orthologs, fill = Order2),
                   stat='identity', colour = "black", width =1) +
-        scale_x_continuous(expand = c(0,0), limits =c(0,28)) +
+        scale_x_continuous(expand = c(0,0), limits =c(0,36)) +
         scale_fill_manual(values = c("red", "blue", "darkorange", "darkgreen")) + 
         labs(fill = "Phylogenetic Order") + theme(legend.position = "bottom") +
         theme(axis.text = element_text(size = 20), strip.text.x = element_text(size = 20), 
-                  legend.text = element_text(size = 20), legend.title = element_text(size = 25)) 
-    facet_plot(tre2, data = Metadat2, panel = "Number of Orthologs", geom = geom_text, 
+                  legend.text = element_text(size = 20), legend.title = element_text(size = 25),
+                  axis.line.x = element_blank(), axis.ticks.x = element_blank(), axis.text.x = element_blank()) 
+    facet_plot(tre2, data = Metadat2, panel = "Number of Orthologous Genes", geom = geom_text, 
                   mapping = aes(x = Num_Orthologs + 0.4, label = Num_Orthologs), size = 6, vjust = 0.45)
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GO output  
@@ -401,7 +438,11 @@ server <- function(input, output) {
     dat
   })
   output$GOs_Tab <- renderDataTable({
-    GOs_dat()
+  	if(input$GOAll == 0){
+    	GOs_dat()
+  	} else if(input$GOAll == 1){
+  		GOs
+  	}
   })
     output$downloadGOData <- downloadHandler(
     filename = function() {
