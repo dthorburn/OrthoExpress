@@ -1,4 +1,4 @@
-# OrthoExpress: *Anopheles gambiae* Orthology & Expression Tool
+# OrthoExpress: *Anopheles gambiae* Orthology, Expression, & Gene Function Tool
 ## Overview
 
 OrthoExpress is a tool developed primarily for use in the Crisanti group, but can be useful for anyone working on *Anopheles gambiae*. Its primary use is to streamline candidate gene searches, combining multiple streams of information from published and unpublished sources into a single tool. When querying a gene, transcript, or protein ID the available information: 
@@ -16,7 +16,8 @@ This tool is written in R and was developed using R version 4.1.1. Please ensure
 ### Step 1: Install packages
 OrthoExpress relies on several R packages, but this only needs to be done the first time the tool is used. Estimated time to complete installation is 10 minutes - there are a lot of dependencies if you do not have any of the libraries installed. 
 ```
-install.packages(c("data.table", "ggplot2", "remotes", "shiny", "dplyr", "ggstance", "stringr"))
+install.packages(c("data.table", "ggplot2", "remotes", "shiny", "dplyr", "ggstance", "stringr", "BiocManager"))
+BiocManager::install("ggtree")
 remotes::install_github("coolbutuseless/ggpattern")
 ```
 
